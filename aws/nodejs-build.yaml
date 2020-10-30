@@ -1,0 +1,52 @@
+---
+- name: Update OS
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update Server
+      yum:
+       name: '*'
+       state: latest
+
+- name: Install Components
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install Ruby
+      yum:
+        name: ruby
+        state: latest
+    - name: Install weget
+      yum:
+        name: wget
+        state: latest
+    - name: Get NVM Install Script
+      get_url:
+        url: https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh
+        dest: ~/
+    - file:
+        path: ~/install.sh
+        mode: 0755
+    - name: Install NVM
+      command: ~/install.sh
+    - name: Install Node.js
+      shell: '. ~/.nvm/nvm.sh && nvm install node'
+      args:
+        creates: "~/.nvm/versions/node"
+        chdir: "~/"
+        executable: /bin/bash
+    - name: Download CloudDeploy Agent
+      get_url:
+        url: https://aws-codedeploy-us-east-2.s3.us-east-2.amazonaws.com/latest/install
+        dest: ~/
+    - file:
+        path: ~/install
+        mode: 0755
+    - name: Install CloudDeploy Agent
+      shell: ~/install auto
+    - name: Install Git
+      yum:
+        name: git-all
+        state: latest
